@@ -1,6 +1,6 @@
 /**************************** Copyright notice ********************************
 
-Copyright (C)2013 by D. Ehms, http://www.patternbox.com
+Copyright (C)2014 by D. Ehms, http://www.patternbox.com
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -23,24 +23,62 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
  ******************************************************************************/
-package com.patternbox.jee7;
+package com.patternbox.jee7.jpa;
 
-import javax.ejb.Schedule;
-import javax.ejb.Singleton;
-import javax.inject.Inject;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
 /**
  * @author <a href='http://www.patternbox.com'>D. Ehms, Patternbox</a>
  */
-@Singleton
-public class TimerServiceEJB {
+@Entity
+public class OrderLine {
 
-	@Inject
-	private MessageProducerEJB messageCreator;
+	@Id
+	@GeneratedValue
+	private Long identifier;
 
-	@Schedule(second = "*/3", minute = "*", hour = "*", persistent = false)
-	public void execute() {
-		// messageCreator.send();
-		messageCreator.produce();
+	@ManyToOne
+	@JoinColumn(name = "productId")
+	private final Product product;
+
+	@ManyToOne
+	@JoinColumn(name = "orderId")
+	private final Order order;
+
+	private final int quantity;
+
+	/**
+	 * @param product
+	 * @param quantity
+	 */
+	public OrderLine(Order order, Product product, int quantity) {
+		this.order = order;
+		this.product = product;
+		this.quantity = quantity;
+	}
+
+	/**
+	 * @return the identifier
+	 */
+	public Long getIdentifier() {
+		return identifier;
+	}
+
+	/**
+	 * @return the product
+	 */
+	public Product getProduct() {
+		return product;
+	}
+
+	/**
+	 * @return the quantity
+	 */
+	public int getQuantity() {
+		return quantity;
 	}
 }

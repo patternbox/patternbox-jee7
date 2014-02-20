@@ -23,39 +23,24 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
  ******************************************************************************/
-package com.patternbox.jee7;
+package com.patternbox.jee7.jms;
 
-import java.util.UUID;
-import java.util.logging.Logger;
-
-import javax.annotation.Resource;
-import javax.ejb.Stateless;
+import javax.ejb.Schedule;
+import javax.ejb.Singleton;
 import javax.inject.Inject;
-import javax.jms.JMSContext;
-import javax.jms.Queue;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
 
 /**
  * @author <a href='http://www.patternbox.com'>D. Ehms, Patternbox</a>
  */
-@Stateless
-public class MessageProducerEJB {
-
-	private static final Logger LOGGER = Logger.getLogger(MessageProducerEJB.class.getName());
-
-	public static final String JMS_QUEUE = "java:/jms/queue/JMSQueue";
-
-	@Resource(mappedName = JMS_QUEUE)
-	private Queue queue;
+@Singleton
+public class TimerServiceEJB {
 
 	@Inject
-	private JMSContext jmsContext;
+	private MessageProducerEJB messageCreator;
 
-	@Path("/jms20")
-	@GET
-	public String produce() {
-		jmsContext.createProducer().send(queue, "Hello JMS2: " + UUID.randomUUID());
-		return "OK";
+	@Schedule(second = "*/3", minute = "*", hour = "*", persistent = false)
+	public void execute() {
+		// messageCreator.send();
+		messageCreator.produce();
 	}
 }
