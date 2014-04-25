@@ -93,6 +93,14 @@ public class Product {
 	}
 
 	/**
+	 * @param name
+	 *          the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	/**
 	 * @return the price
 	 */
 	public double getPrice() {

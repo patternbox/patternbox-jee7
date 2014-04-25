@@ -25,6 +25,8 @@ SUCH DAMAGE.
  ******************************************************************************/
 package com.patternbox.tangocalendar.location.logic;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -41,7 +43,7 @@ import de.akquinet.jbosscc.needle.junit.DatabaseRule;
 import de.akquinet.jbosscc.needle.junit.NeedleRule;
 
 /**
- * Unit test for {@link com.patternbox.tangocalendar.location.logic.LocationRepository}
+ * Unit test for tracking version management by JPA.
  * 
  * @author <a href='http://www.patternbox.com'>D. Ehms, Patternbox</a>
  */
@@ -60,12 +62,23 @@ public class JpaVersionTest {
 	public void setUp() throws Exception {
 	}
 
+	private void increaseProductVersion(final EntityManager em, final Long productId)
+			throws Exception {
+		Product product = em.find(Product.class, productId);
+		Long version = product.getVersion();
+		product.setName(product.getName() + "_X");
+		em.merge(product);
+		em.flush();
+		product = em.find(Product.class, productId);
+		assertEquals(version + 1, product.getVersion().longValue());
+	}
+
 	/**
 	 * Test method.
 	 */
 	@Test
 	public void testStoreLocation() throws Exception {
-		//
+		// insert products into database
 		databaseRule.getTransactionHelper().executeInTransaction(new VoidRunnable() {
 
 			@Override
@@ -76,7 +89,7 @@ public class JpaVersionTest {
 				System.out.println(products);
 			}
 		});
-		//
+		// assign product to an order line and check version stability of the product
 		databaseRule.getTransactionHelper().executeInTransaction(new VoidRunnable() {
 
 			@Override
@@ -84,8 +97,21 @@ public class JpaVersionTest {
 				Product product = em.find(Product.class, 1L);
 				Order order = new Order("MyOrder-1");
 				order.addProduct(product, 3);
-				// hack :(
-				em.persist(order.getOrderLines().get(0));
+				em.persist(order);
+				List<Product> products = em.createNamedQuery("All_Products", Product.class).getResultList();
+				System.out.println(products);
+			}
+		});
+		// what happens with an order if the referenced product is updated in the meanwhile
+		databaseRule.getTransactionHelper().executeInTransaction(new VoidRunnable() {
+
+			@Override
+			public void doRun(EntityManager em) throws Exception {
+				Product product = em.find(Product.class, 1L);
+				increaseProductVersion(em, product.getIdentifier());
+				Order order = new Order("MyOrder-1");
+				// em.detach(product);
+				order.addProduct(product, 3);
 				em.persist(order);
 				List<Product> products = em.createNamedQuery("All_Products", Product.class).getResultList();
 				System.out.println(products);

@@ -30,6 +30,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Version;
 
 /**
  * @author <a href='http://www.patternbox.com'>D. Ehms, Patternbox</a>
@@ -41,15 +42,25 @@ public class OrderLine {
 	@GeneratedValue
 	private Long identifier;
 
+	@Version
+	private Long version;
+
 	@ManyToOne
 	@JoinColumn(name = "productId")
-	private final Product product;
+	private Product product;
 
 	@ManyToOne
 	@JoinColumn(name = "orderId")
-	private final Order order;
+	private Order order;
 
-	private final int quantity;
+	private int quantity;
+
+	/**
+	 * Default constructor to satisfy EclipseLink
+	 */
+	private OrderLine() {
+		super();
+	}
 
 	/**
 	 * @param product

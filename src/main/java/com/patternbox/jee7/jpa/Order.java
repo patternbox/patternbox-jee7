@@ -28,6 +28,7 @@ package com.patternbox.jee7.jpa;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -52,11 +53,18 @@ public class Order {
 	@Version
 	private Long version;
 
-	private final String orderNum;
+	private String orderNum;
 
-	@OneToMany
+	@OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, orphanRemoval = true)
 	@JoinColumn(name = "orderId")
 	private final List<OrderLine> orderLines = new ArrayList<OrderLine>();
+
+	/**
+	 * Default constructor to satisfy EclipseLink
+	 */
+	private Order() {
+		super();
+	}
 
 	/**
 	 * @param orderNum
@@ -93,7 +101,7 @@ public class Order {
 	/**
 	 * @return the orderLines
 	 */
-	public List<OrderLine> getOrderLines() {
+	public List<OrderLine> orderLines() {
 		return orderLines;
 	}
 }
